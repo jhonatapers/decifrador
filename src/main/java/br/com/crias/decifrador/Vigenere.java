@@ -126,6 +126,12 @@ public class Vigenere implements Decifrador {
             Entry<Character, Double> aham = acharValorMaisProximo(lingua.getFrequencias().entrySet(),
                     caracterTextoQueMaisAparece.getValue().aparicoes());
 
+            aham = lingua.getFrequencias()
+                    .entrySet()
+                    .stream()
+                    .max(Map.Entry.<Character, Double>comparingByValue())
+                    .get();
+
             int diferenca = calcularDiferencaAscii(aham.getKey(), caracterTextoQueMaisAparece.getKey());
 
             chave[i] = encontrarCaractereCorrespondente(subTextos[i].charAt(0), diferenca);
@@ -161,7 +167,9 @@ public class Vigenere implements Decifrador {
         int i = 0;
         for (Character character : textoCifrado.toCharArray()) {
             int diff = calcularDiferencaAscii(character, chave[i]);
-            Character charDecifrado = encontrarCaractereCorrespondente(character, diff);
+            // Character charDecifrado = encontrarCaractereCorrespondente(character, diff);
+
+            char charDecifrado = (char) ('a' + diff);
             builder.append(charDecifrado);
             i = i == tamanhoChave - 1 ? 0 : i + 1;
         }
