@@ -1,3 +1,8 @@
 spring:
     application:
         name: decifrador
+texto-cifrado:
+  caminho: C:\Users\jhona\Desktop\Workspace\pucrs\seguranca de sistemas\T1\decifrador\src\main\resources\20201-teste1.txt
+linguas:
+    - arquivo: english.yml
+    - arquivo: portugues.yml
