@@ -15,8 +15,6 @@ import br.com.crias.decifrador.MetrificadorDeCaracteres.Metrica;
 
 public class Vigenere {
 
-    Semaphore barreira;
-
     private int tamanhoChave = 0;
 
     private final String textoCifrado;
@@ -37,7 +35,6 @@ public class Vigenere {
         this.metrificadorDeCaracteres = metrificadorDeCaracteres;
         this.textoCifrado = textoCifrado;
         this.linguas = linguas;
-        this.barreira = new Semaphore(linguas.length);
     }
 
     public Character[] proximaPossivelChave() {
