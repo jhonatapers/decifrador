@@ -68,16 +68,26 @@ public class Vigenere {
 
             int charDecifrado = (character - chave[i] + 26) % 26 + 'a';
 
-            // int diff = calcularDiferencaAscii(character, chave[i]);
-            // Character charDecifrado = encontrarCaractereCorrespondente(character, diff);
-
-            // char charDecifrado = (char) ('a' + diff);
             builder.append((char) charDecifrado);
             i = i == tamanhoChave - 1 ? 0 : i + 1;
         }
 
         return builder.toString();
 
+    }
+
+    public Character[] decifrarChave(Character[] chave, String[] subTextos) {
+        int i = 0;
+
+        while (subTextos.length > i && chave.length > i) {
+
+            int charChaveDecifrado = (subTextos[i].charAt(0) - chave[i] + 26) % 26 + 'a';
+
+            chave[i] = (char) charChaveDecifrado;
+            i++;
+        }
+
+        return chave;
     }
 
     private Lingua linguaOndeIndiceCoincidenciaMelhorSeAdequa(final double melhorIndiceCoincidencia) {
@@ -153,9 +163,10 @@ public class Vigenere {
             int diferenca = calcularDiferencaAscii(aham.getKey(), caracterTextoQueMaisAparece.getKey());
 
             chave[i] = encontrarCaractereCorrespondente(subTextos[i].charAt(0), diferenca);
+
         }
 
-        return chave;
+        return decifrarChave(chave, subTextos);
     }
 
     private <T> Set<T> ordenar(Set<T> set, Comparator<T> comparator) {
