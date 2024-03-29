@@ -4,27 +4,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
-import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
-
-import org.springframework.stereotype.Component;
+import java.util.stream.Collectors;
 
 import br.com.crias.decifrador.MetrificadorDeCaracteres.Metrica;
 
-@Component
-public class Vigenere implements Decifrador {
+public class Vigenere {
 
     Semaphore barreira;
+
+    private int tamanhoChave = 0;
+
+    private final String textoCifrado;
 
     private final Lingua[] linguas;
 
     private final Double margem = 0.002;
-
-    // private final Double indiceCoincidenciaAlvo = 0.066;
 
     private final MetrificadorDeCaracteres metrificadorDeCaracteres;
 
@@ -32,17 +31,18 @@ public class Vigenere implements Decifrador {
 
     public Vigenere(CalculadoraDeCoincidencia calculadoraDeCoincidencia,
             MetrificadorDeCaracteres metrificadorDeCaracteres,
+            String textoCifrado,
             Lingua... linguas) {
         this.calculadoraDeCoincidencia = calculadoraDeCoincidencia;
         this.metrificadorDeCaracteres = metrificadorDeCaracteres;
+        this.textoCifrado = textoCifrado;
         this.linguas = linguas;
         this.barreira = new Semaphore(linguas.length);
     }
 
-    @Override
-    public String decifrar(String textoCifrado) {
+    public Character[] proximaPossivelChave() {
+        tamanhoChave++;
 
-        int tamanhoChave = 1;
         String[] subTextos = capturarSubTextosPorTamanhoDaChave(textoCifrado, tamanhoChave);
         double indiceCoincidenciaEncontrado = calcularIndiceCoincidencia(subTextos);
 
@@ -57,9 +57,27 @@ public class Vigenere implements Decifrador {
 
         Lingua linguaAlvo = linguaOndeIndiceCoincidenciaMelhorSeAdequa(indiceCoincidenciaEncontrado);
 
-        Character[] chave = revelarChave(tamanhoChave, subTextos, linguaAlvo);
+        return revelarChave(tamanhoChave, subTextos, linguaAlvo);
+    }
 
-        return decifrar(textoCifrado, chave);
+    public String decifrar(Character[] chave) {
+        StringBuilder builder = new StringBuilder();
+        int tamanhoChave = chave.length;
+        int i = 0;
+        for (Character character : textoCifrado.toCharArray()) {
+
+            int charDecifrado = (character - chave[i] + 26) % 26 + 'a';
+
+            // int diff = calcularDiferencaAscii(character, chave[i]);
+            // Character charDecifrado = encontrarCaractereCorrespondente(character, diff);
+
+            // char charDecifrado = (char) ('a' + diff);
+            builder.append((char) charDecifrado);
+            i = i == tamanhoChave - 1 ? 0 : i + 1;
+        }
+
+        return builder.toString();
+
     }
 
     private Lingua linguaOndeIndiceCoincidenciaMelhorSeAdequa(final double melhorIndiceCoincidencia) {
@@ -159,23 +177,6 @@ public class Vigenere implements Decifrador {
     private char encontrarCaractereCorrespondente(char char1, int diff) {
         int result = ((char1 - 'a' + diff) % 26 + 26) % 26 + 'a';
         return (char) result;
-    }
-
-    private String decifrar(String textoCifrado, Character[] chave) {
-        StringBuilder builder = new StringBuilder();
-        int tamanhoChave = chave.length;
-        int i = 0;
-        for (Character character : textoCifrado.toCharArray()) {
-            int diff = calcularDiferencaAscii(character, chave[i]);
-            // Character charDecifrado = encontrarCaractereCorrespondente(character, diff);
-
-            char charDecifrado = (char) ('a' + diff);
-            builder.append(charDecifrado);
-            i = i == tamanhoChave - 1 ? 0 : i + 1;
-        }
-
-        return builder.toString();
-
     }
 
 }
