@@ -3,14 +3,11 @@ package br.com.crias.decifrador;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
-
-import br.com.crias.decifrador.MetrificadorDeCaracteres.Metrica;
 
 public class Vigenere {
 
@@ -22,8 +19,6 @@ public class Vigenere {
 
     private final Double margem = 0.003;
 
-    private final MetrificadorDeCaracteres metrificadorDeCaracteres;
-
     private final CalculadoraDeCoincidencia calculadoraDeCoincidencia;
 
     public Vigenere(CalculadoraDeCoincidencia calculadoraDeCoincidencia,
@@ -31,7 +26,6 @@ public class Vigenere {
             String textoCifrado,
             Lingua... linguas) {
         this.calculadoraDeCoincidencia = calculadoraDeCoincidencia;
-        this.metrificadorDeCaracteres = metrificadorDeCaracteres;
         this.textoCifrado = textoCifrado;
         this.linguas = linguas;
     }
@@ -70,20 +64,6 @@ public class Vigenere {
 
         return builder.toString();
 
-    }
-
-    public Character[] decifrarChave(Character[] chave, String[] subTextos) {
-        int i = 0;
-
-        while (subTextos.length > i && chave.length > i) {
-
-            int charChaveDecifrado = (subTextos[i].charAt(0) - chave[i] + 26) % 26 + 'a';
-
-            chave[i] = (char) charChaveDecifrado;
-            i++;
-        }
-
-        return chave;
     }
 
     private Lingua linguaOndeIndiceCoincidenciaMelhorSeAdequa(final double melhorIndiceCoincidencia) {
@@ -135,55 +115,93 @@ public class Vigenere {
         Character[] chave = new Character[tamanhoChave];
 
         for (int i = 0; i < tamanhoChave; i++) {
-
-            Map<Character, Metrica> metricas = metrificadorDeCaracteres.metrificar(subTextos[i]);
-
-            Set<Map.Entry<Character, Metrica>> caracteresTextoOrdenadoPorAparicoes = ordenar(metricas.entrySet(),
-                    Map.Entry.<Character, Metrica>comparingByValue(
-                            Comparator.comparingDouble(Metrica::porcentagemAparicoes).reversed()));
-
-            Entry<Character, Metrica> caracterTextoQueMaisAparece = caracteresTextoOrdenadoPorAparicoes.stream()
-                    .max(Map.Entry.<Character, Metrica>comparingByValue(
-                            Comparator.comparingDouble(Metrica::porcentagemAparicoes)))
-                    .get();
-
-            Entry<Character, Double> caracaterQueMaisApareceNaLingua = lingua.getFrequencias()
-                    .entrySet()
-                    .stream()
-                    .max(Map.Entry.<Character, Double>comparingByValue())
-                    .get();
-
-            Entry<Character, Double> aham = acharValorMaisProximo(lingua.getFrequencias().entrySet(),
-                    caracterTextoQueMaisAparece.getValue().porcentagemAparicoes());
-
-            int diferenca = calcularDiferencaAscii(aham.getKey(), caracterTextoQueMaisAparece.getKey());
-
-            chave[i] = encontrarCaractereCorrespondente(subTextos[i].charAt(0), diferenca);
-
+            chave[i] = analiseFrequenciaBhattacharyya(subTextos[i], lingua.getFrequencias().values().stream().mapToDouble(Double::doubleValue).toArray());
         }
 
-        return decifrarChave(chave, subTextos);
+        return chave;
     }
 
-    private Map.Entry<Character, Double> acharValorMaisProximo(Set<Map.Entry<Character, Double>> entrySet,
-            double targetValue) {
-        return entrySet.stream()
-                .min((entry1, entry2) -> Double.compare(Math.abs(entry1.getValue() - targetValue),
-                        Math.abs(entry2.getValue() - targetValue)))
-                .orElse(null);
+    private char analiseFrequencia(String sequencia, double[] frequenciasIngles) {
+        Map<Character, Double> frequencias = new HashMap<>();
+        for (char c : sequencia.toCharArray()) {
+            frequencias.put(c, frequencias.getOrDefault(c, 0.0) + 1);
+        }
+
+        List<Entry<Character, Double>> frequenciasOrdenadas = frequencias.entrySet()
+                .stream()
+                .sorted(Comparator.comparing(Entry::getValue))
+                .collect(Collectors.toList());
+
+        char deslocamento = (char) (frequenciasOrdenadas.get(frequenciasOrdenadas.size() - 1).getKey() - 'e' + 'a');
+
+        return deslocamento;
     }
 
-    private <T> Set<T> ordenar(Set<T> set, Comparator<T> comparator) {
-        return set.stream().sorted(comparator).collect(Collectors.toCollection(LinkedHashSet::new));
+    private char analiseFrequenciaQuiQuadrado(String sequencia, double[] frequenciasLingua) {
+        double menorQuiQuadrado = Double.MAX_VALUE;
+        char melhorCaractere = 'a';
+    
+        for (int deslocamento = 0; deslocamento < 26; deslocamento++) {
+            double somaQuiQuadrados = 0.0;
+    
+            // Calcula os qui-quadrados
+            for (int i = 0; i < 26; i++) {
+                double frequenciaAtual = frequenciasLingua[i];
+                double frequenciaObservada = frequenciaObservada(sequencia, deslocamento, i);
+                double quiQuadrado = Math.pow(frequenciaObservada - frequenciaAtual, 2) / frequenciaAtual;
+                somaQuiQuadrados += quiQuadrado;
+            }
+    
+            if (somaQuiQuadrados < menorQuiQuadrado) {
+                menorQuiQuadrado = somaQuiQuadrados;
+                melhorCaractere = (char) ('a' + deslocamento);
+            }
+        }
+    
+        return melhorCaractere;
     }
 
-    private int calcularDiferencaAscii(char char1, char value1) {
-        return (char1 - value1 + 26) % 26;
+    private char analiseFrequenciaBhattacharyya(String subtexto, double[] frequenciasLingua) {
+        double menorDistancia = Double.MAX_VALUE;
+        char melhorCaractere = 'a';
+    
+        for (int deslocamento = 0; deslocamento < 26; deslocamento++) {
+            double distancia = 0.0;
+    
+            // Calcula a distância de Bhattacharyya
+            double somaRaizProdutos = 0.0;
+            for (int i = 0; i < 26; i++) {
+                double frequenciaAtual = frequenciasLingua[i];
+                double frequenciaObservada = frequenciaObservada(subtexto, deslocamento, i);
+                somaRaizProdutos += Math.sqrt(frequenciaAtual * frequenciaObservada);
+            }
+            distancia = -Math.log(somaRaizProdutos);
+    
+            if (distancia < menorDistancia) {
+                menorDistancia = distancia;
+                melhorCaractere = (char) ('a' + deslocamento);
+            }
+        }
+    
+        return melhorCaractere;
     }
+    
+    private Double frequenciaObservada(String texto, Integer deslocamento, Integer index) {
+        int[] contagemCaracteres = new int[26];
+        int totalCaracteres = 0;
+    
+        for (int i = 0; i < texto.length(); i++) {
+            char caractere = texto.charAt(i);
+            if (Character.isLetter(caractere)) {
+                char caractereDeslocado = (char) ('a' + (caractere - 'a' - deslocamento + 26) % 26);
+                int indice = caractereDeslocado - 'a';
+                contagemCaracteres[indice]++;
+                totalCaracteres++;
+            }
+        }
 
-    private char encontrarCaractereCorrespondente(char char1, int diff) {
-        int result = ((char1 - 'a' + diff) % 26 + 26) % 26 + 'a';
-        return (char) result;
+        return (double) contagemCaracteres[index] / totalCaracteres;
+
     }
 
 }

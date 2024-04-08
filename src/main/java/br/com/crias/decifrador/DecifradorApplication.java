@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Scanner;
 
 import org.springframework.boot.SpringApplication;
@@ -40,18 +39,6 @@ public class DecifradorApplication {
 						break;
 					}
 					case 1: {
-
-						//ultimaChave = vigenere.proximaPossivelChave();
-						/*ultimaChave = new Character[7];
-						ultimaChave[0] = 'm';
-						ultimaChave[1] = 'e';
-						ultimaChave[2] = 'u';
-						ultimaChave[3] = 'n';
-						ultimaChave[4] = 'o';
-						ultimaChave[5] = 'm';
-						ultimaChave[6] = 'e';*/
-					
-
 						System.out.println("Ultima chave");
 						printarChave(ultimaChave);
 
@@ -96,7 +83,7 @@ public class DecifradorApplication {
 			return new Vigenere(new CalculadoraDeCoincidencia(new MetrificadorDeCaracteres()),
 					new MetrificadorDeCaracteres(),
 					textoCifrado,
-					// english,
+					english,
 					portugues);
 
 		} catch (Exception e) {
