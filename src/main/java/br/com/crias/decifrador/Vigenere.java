@@ -147,16 +147,14 @@ public class Vigenere {
                             Comparator.comparingDouble(Metrica::porcentagemAparicoes)))
                     .get();
 
-            Entry<Character, Double> aham = acharValorMaisProximo(lingua.getFrequencias().entrySet(),
-                    caracterTextoQueMaisAparece.getValue().aparicoes());
-
-            aham = lingua.getFrequencias()
+            Entry<Character, Double> caracaterQueMaisApareceNaLingua = lingua.getFrequencias()
                     .entrySet()
                     .stream()
                     .max(Map.Entry.<Character, Double>comparingByValue())
                     .get();
 
-            int diferenca = calcularDiferencaAscii(aham.getKey(), caracterTextoQueMaisAparece.getKey());
+            int diferenca = calcularDiferencaAscii(caracaterQueMaisApareceNaLingua.getKey(),
+                    caracterTextoQueMaisAparece.getKey());
 
             chave[i] = encontrarCaractereCorrespondente(subTextos[i].charAt(0), diferenca);
 
@@ -167,14 +165,6 @@ public class Vigenere {
 
     private <T> Set<T> ordenar(Set<T> set, Comparator<T> comparator) {
         return set.stream().sorted(comparator).collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    private Map.Entry<Character, Double> acharValorMaisProximo(Set<Map.Entry<Character, Double>> entrySet,
-            double targetValue) {
-        return entrySet.stream()
-                .min((entry1, entry2) -> Double.compare(Math.abs(entry1.getValue() - targetValue),
-                        Math.abs(entry2.getValue() - targetValue)))
-                .orElse(null);
     }
 
     private int calcularDiferencaAscii(char char1, char value1) {

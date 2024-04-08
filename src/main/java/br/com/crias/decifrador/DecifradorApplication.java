@@ -25,11 +25,10 @@ public class DecifradorApplication {
 		try (Scanner scanner = new Scanner(System.in)) {
 			Vigenere vigenere = preparaSetup();
 
-			Character[] penultimaChave = new Character[0];
 			Character[] ultimaChave = vigenere.proximaPossivelChave();
 
 			System.out.println("Ultima chave salva");
-			printarChave(penultimaChave);
+			printarChave(ultimaChave);
 
 			boolean loop = true;
 			while (loop) {
@@ -41,8 +40,7 @@ public class DecifradorApplication {
 					}
 					case 1: {
 
-						penultimaChave = ultimaChave;
-						ultimaChave = vigenere.proximaPossivelChave();
+						//ultimaChave = vigenere.proximaPossivelChave();
 
 						System.out.println("Ultima chave");
 						printarChave(ultimaChave);
