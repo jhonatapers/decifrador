@@ -20,7 +20,7 @@ public class Vigenere {
 
     private final Lingua[] linguas;
 
-    private final Double margem = 0.002;
+    private final Double margem = 0.003;
 
     private final MetrificadorDeCaracteres metrificadorDeCaracteres;
 
@@ -153,14 +153,24 @@ public class Vigenere {
                     .max(Map.Entry.<Character, Double>comparingByValue())
                     .get();
 
-            int diferenca = calcularDiferencaAscii(caracaterQueMaisApareceNaLingua.getKey(),
-                    caracterTextoQueMaisAparece.getKey());
+            Entry<Character, Double> aham = acharValorMaisProximo(lingua.getFrequencias().entrySet(),
+                    caracterTextoQueMaisAparece.getValue().porcentagemAparicoes());
+
+            int diferenca = calcularDiferencaAscii(aham.getKey(), caracterTextoQueMaisAparece.getKey());
 
             chave[i] = encontrarCaractereCorrespondente(subTextos[i].charAt(0), diferenca);
 
         }
 
         return decifrarChave(chave, subTextos);
+    }
+
+    private Map.Entry<Character, Double> acharValorMaisProximo(Set<Map.Entry<Character, Double>> entrySet,
+            double targetValue) {
+        return entrySet.stream()
+                .min((entry1, entry2) -> Double.compare(Math.abs(entry1.getValue() - targetValue),
+                        Math.abs(entry2.getValue() - targetValue)))
+                .orElse(null);
     }
 
     private <T> Set<T> ordenar(Set<T> set, Comparator<T> comparator) {

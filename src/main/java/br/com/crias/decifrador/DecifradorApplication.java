@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Scanner;
 
 import org.springframework.boot.SpringApplication;
@@ -16,8 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootApplication
 public class DecifradorApplication {
 
-	private static Path arquivoDestino = Path.of(
-			"C:\\Users\\jhona\\Desktop\\Workspace\\pucrs\\seguranca de sistemas\\T1\\decifrador\\src\\main\\resources\\20201-teste1-decifrado.txt");
+	private static Path arquivoDestino = Paths.get("src/main/resources/20201-teste1-decifrado.txt");
 
 	public static void main(String[] args) {
 		SpringApplication.run(DecifradorApplication.class, args);
@@ -41,6 +42,15 @@ public class DecifradorApplication {
 					case 1: {
 
 						//ultimaChave = vigenere.proximaPossivelChave();
+						/*ultimaChave = new Character[7];
+						ultimaChave[0] = 'm';
+						ultimaChave[1] = 'e';
+						ultimaChave[2] = 'u';
+						ultimaChave[3] = 'n';
+						ultimaChave[4] = 'o';
+						ultimaChave[5] = 'm';
+						ultimaChave[6] = 'e';*/
+					
 
 						System.out.println("Ultima chave");
 						printarChave(ultimaChave);
@@ -69,16 +79,14 @@ public class DecifradorApplication {
 
 		try {
 
-			Path path = Path.of(
-					"C:\\Users\\jhona\\Desktop\\Workspace\\pucrs\\seguranca de sistemas\\T1\\decifrador\\src\\main\\resources\\20201-teste1.txt");
+			Path path = Paths.get("src/main/resources/20201-teste1.txt");
 
 			String textoCifrado = Files.readString(path, StandardCharsets.UTF_8);
 			ObjectMapper mapper = new ObjectMapper();
-			String englishJson = Files.readString(
-					Path.of("C:\\Users\\jhona\\Desktop\\Workspace\\pucrs\\seguranca de sistemas\\T1\\decifrador\\src\\main\\resources\\english.json"),
+			String englishJson = Files.readString(Paths.get("src/main//resources/english.json"),
 					StandardCharsets.UTF_8);
 			String portuguesJson = Files.readString(
-					Path.of("C:\\Users\\jhona\\Desktop\\Workspace\\pucrs\\seguranca de sistemas\\T1\\decifrador\\src\\main\\resources\\portugues.json"),
+					Paths.get("src/main/resources/portugues.json"),
 					StandardCharsets.UTF_8);
 
 			Lingua english = mapper.readValue(englishJson, Lingua.class);
@@ -88,7 +96,7 @@ public class DecifradorApplication {
 			return new Vigenere(new CalculadoraDeCoincidencia(new MetrificadorDeCaracteres()),
 					new MetrificadorDeCaracteres(),
 					textoCifrado,
-					english,
+					// english,
 					portugues);
 
 		} catch (Exception e) {
